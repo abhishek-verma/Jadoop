@@ -6,6 +6,8 @@ import java.net.Socket;
 
 public class WorkerRunnable implements Runnable {
 
+    public final static String TAG = WorkerRunnable.class.getSimpleName() + " | ";
+
     protected Socket clientSocket;
 
     public WorkerRunnable(Socket clientSocket) {
@@ -52,31 +54,21 @@ public class WorkerRunnable implements Runnable {
         clientSocket.close();
         storageConnections.closeAll();
 
-        System.out.println("File successfully Received!");
+        System.out.println(TAG + "File successfully Forwarded to Storage Server!");
     }
 
     private void getFileAction() throws IOException, ClassNotFoundException {
-        InputStream socketIn = clientSocket.getInputStream();
-        ObjectInputStream socketois = new ObjectInputStream(socketIn);
+        String[] hosts = { "localhost" };
+        int[] ports = { 2001 };
 
-        String fileName = (String) socketois.readObject();
+        StorageConnections storageConnections = new StorageConnections(hosts, ports);
 
-        OutputStream socketOut = clientSocket.getOutputStream();
-        FileInputStream fis = new FileInputStream(fileName);
-        BufferedInputStream filein = new BufferedInputStream(fis);
+        storageConnections.sendAction("GET");
+        storageConnections.getFileAction(clientSocket);
 
-        byte[] buffer = new byte[1024];
-        int count;
-
-
-        System.out.println("Receiving File...");
-        while ((count = filein.read(buffer)) > 0) {
-            socketOut.write(buffer, 0, count);
-            socketOut.flush();
-        }
-
-        filein.close();
         clientSocket.close();
-        System.out.println("File successfully Received!");
+        storageConnections.closeAll();
+
+        System.out.println(TAG + "File successfully Forwarded to Client!");
     }
 }

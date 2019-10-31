@@ -5,10 +5,12 @@ import java.net.Socket;
 
 public class Client {
 
+    public final static String TAG = Client.class.getSimpleName() + " | ";
+
     private Socket socket;
 
     public Client(String host, int port) throws IOException {
-        System.out.println("Connecting to Server...");
+        System.out.println(TAG + "Connecting to Server...");
         socket = new Socket(host, port);
     }
 
@@ -20,19 +22,19 @@ public class Client {
         dataOutputStream.flush(); // send the message
     }
 
-    public void putFile(String filepath) throws IOException {
+    public void putFile(String filepath, String destName) throws IOException {
         File file = new File(filepath);
         int count;
         byte[] buffer = new byte[1024];
 
         // Sending file name
-        sendFileName(file.getName());
+        sendFileName(destName);
 
         // Sending the file
         OutputStream out = socket.getOutputStream();
         BufferedInputStream filein = new BufferedInputStream(new FileInputStream(file));
 
-        System.out.println("Sending File...");
+        System.out.println(TAG + "Sending File...");
         while ((count = filein.read(buffer)) > 0) {
             out.write(buffer, 0, count);
             out.flush();
@@ -41,7 +43,33 @@ public class Client {
         socket.close();
         filein.close();
 
-        System.out.println("File successfully Sent!");
+        System.out.println(TAG + "File successfully Sent!");
+    }
+
+    public void getFile(String fileId, String destPath) throws IOException {
+        File file = new File(destPath);
+
+        // Sending file name
+        sendFileName(fileId);
+
+        // Receiving the file
+        InputStream socketIn = socket.getInputStream();
+        DataInputStream socketDis = new DataInputStream(socketIn);
+
+        FileOutputStream fileos = new FileOutputStream(file);
+
+        byte[] buffer = new byte[1024];
+        int count;
+
+        System.out.println(TAG + "Receiving File...");
+        while((count=socketIn.read(buffer)) >0){
+            fileos.write(buffer, 0, count);
+        }
+
+        fileos.close();
+        socket.close();
+
+        System.out.println(TAG + "File successfully Received!");
     }
 
     public void sendFileName(String fileName) throws IOException {
@@ -58,7 +86,8 @@ public class Client {
      */
     public static void main(String[] args) {
 
-        String[] testArgs = {"put", "files/cat.jpg"};
+//        String[] testArgs = {"put", "files/cat.jpg", "cat.jpg"};
+        String[] testArgs = {"get", "cat.jpg", "files/receivedCat.jpg"};
         args = testArgs;
 
         try {
@@ -69,7 +98,12 @@ public class Client {
 
             if(action.equals("put")) {
                 String filePath = args[1];
-                client.putFile(filePath);
+                String destName = args[2];
+                client.putFile(filePath, destName);
+            } else if(action.equals("get")) {
+                String fileId = args[1];
+                String destPath = args[2];
+                client.getFile(fileId, destPath);
             }
 
         } catch (IOException e) {
