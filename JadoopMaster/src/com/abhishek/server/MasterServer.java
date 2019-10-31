@@ -27,8 +27,7 @@ public class MasterServer extends Thread {
             try {
                 clientSocket = this.serverSock.accept();
                 System.out.println("Client Connected, Serving Client...");
-                this.threadPool.execute(:
-                        new WorkerRunnable(clientSocket));
+                this.threadPool.execute(new WorkerRunnable(clientSocket));
             } catch (IOException e) {
                 throw new RuntimeException(
                         "Error accepting client connection", e);

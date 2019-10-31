@@ -1,9 +1,7 @@
 package com.abhishek.storageserver;
 
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.Socket;
 
 public class WorkerRunnable implements Runnable{
@@ -16,27 +14,77 @@ public class WorkerRunnable implements Runnable{
 
     public void run() {
         try {
-            saveFile(clientSocket);
-        } catch (IOException e) {
+            switch (getAction()) {
+                case PUT:
+                    putFileAction();
+                    break;
+                case GET:
+                    getFileAction();
+                    break;
+                case LS:
+                    break;
+                case COUNT:
+                    break;
+            }
+            putFileAction();
+        } catch (IOException | ClassNotFoundException e) {
             //report exception somewhere.
             e.printStackTrace();
         }
     }
 
-    private void saveFile(Socket clientSock) throws IOException {
-        String receivedPath = "received.jpg";
-        FileOutputStream fos = new FileOutputStream(receivedPath);
+    private Action getAction() throws IOException, ClassNotFoundException, IllegalArgumentException {
+        InputStream socketIn = clientSocket.getInputStream();
+        ObjectInputStream socketois = new ObjectInputStream(socketIn);
+
+        String action = "";
+        action = (String) socketois.readObject();
+
+        return Action.valueOf(action);
+    }
+
+    private void putFileAction() throws IOException, ClassNotFoundException {
+        InputStream socketIn = clientSocket.getInputStream();
+        ObjectInputStream socketois = new ObjectInputStream(socketIn);
+
+        String fileName = (String) socketois.readObject();
+
+        FileOutputStream fileos = new FileOutputStream(fileName);
         byte[] buffer = new byte[1024];
         int count;
 
-        InputStream in = clientSock.getInputStream();
+        System.out.println("Receiving File...");
+        while((count=socketIn.read(buffer)) >0){
+            fileos.write(buffer, 0, count);
+        }
+
+        fileos.close();
+        clientSocket.close();
+        System.out.println("File successfully Received!");
+    }
+
+    private void getFileAction() throws IOException, ClassNotFoundException {
+        InputStream socketIn = clientSocket.getInputStream();
+        ObjectInputStream socketois = new ObjectInputStream(socketIn);
+
+        String fileName = (String) socketois.readObject();
+
+        OutputStream socketOut = clientSocket.getOutputStream();
+        FileInputStream fis = new FileInputStream(fileName);
+        BufferedInputStream filein = new BufferedInputStream(fis);
+
+        byte[] buffer = new byte[1024];
+        int count;
+
 
         System.out.println("Receiving File...");
-        while((count=in.read(buffer)) >0){
-            fos.write(buffer, 0, count);
+        while((count=filein.read(buffer)) > 0){
+            socketOut.write(buffer, 0, count);
+            socketOut.flush();
         }
-        fos.close();
-        clientSock.close();
+
+        filein.close();
+        clientSocket.close();
         System.out.println("File successfully Received!");
     }
 }
