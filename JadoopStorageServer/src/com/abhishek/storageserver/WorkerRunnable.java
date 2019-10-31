@@ -6,7 +6,7 @@ import java.net.Socket;
 
 public class WorkerRunnable implements Runnable{
 
-    protected Socket clientSocket = null;
+    protected Socket clientSocket;
 
     public WorkerRunnable(Socket clientSocket) {
         this.clientSocket = clientSocket;
@@ -26,28 +26,26 @@ public class WorkerRunnable implements Runnable{
                 case COUNT:
                     break;
             }
-            putFileAction();
         } catch (IOException | ClassNotFoundException e) {
             //report exception somewhere.
             e.printStackTrace();
         }
     }
 
-    private Action getAction() throws IOException, ClassNotFoundException, IllegalArgumentException {
+    private Action getAction() throws IOException, IllegalArgumentException {
         InputStream socketIn = clientSocket.getInputStream();
-        ObjectInputStream socketois = new ObjectInputStream(socketIn);
+        DataInputStream socketdis = new DataInputStream(socketIn);
 
-        String action = "";
-        action = (String) socketois.readObject();
+        String action = socketdis.readUTF();
 
         return Action.valueOf(action);
     }
 
-    private void putFileAction() throws IOException, ClassNotFoundException {
+    private void putFileAction() throws IOException {
         InputStream socketIn = clientSocket.getInputStream();
-        ObjectInputStream socketois = new ObjectInputStream(socketIn);
+        DataInputStream socketdis = new DataInputStream(socketIn);
 
-        String fileName = (String) socketois.readObject();
+        String fileName = socketdis.readUTF();
 
         FileOutputStream fileos = new FileOutputStream(fileName);
         byte[] buffer = new byte[1024];
