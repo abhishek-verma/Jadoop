@@ -28,9 +28,17 @@ public class WorkerRunnable implements Runnable{
                 case COUNT:
                     break;
             }
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (FileNotFoundException e) {
+            System.err.println("[ERROR] Operation Failed: " + e.getMessage());
+        } catch (EOFException e) { } catch (IOException e) {
             //report exception somewhere.
             e.printStackTrace();
+        } finally {
+            try {
+                clientSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -62,11 +70,10 @@ public class WorkerRunnable implements Runnable{
         }
 
         fileos.close();
-        clientSocket.close();
         System.out.println(TAG + "File successfully Received!");
     }
 
-    private void getFileAction() throws IOException, ClassNotFoundException {
+    private void getFileAction() throws IOException, EOFException {
         InputStream socketIn = clientSocket.getInputStream();
         DataInputStream socketdis = new DataInputStream(socketIn);
 
@@ -84,9 +91,9 @@ public class WorkerRunnable implements Runnable{
             socketOut.flush();
         }
 
-        clientSocket.close();
         filein.close();
 
         System.out.println(TAG + "File successfully Sent!");
     }
+
 }

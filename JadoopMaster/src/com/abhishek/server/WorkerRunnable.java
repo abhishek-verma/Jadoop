@@ -3,6 +3,8 @@ package com.abhishek.server;
 
 import java.io.*;
 import java.net.Socket;
+import java.nio.file.NoSuchFileException;
+import java.util.List;
 
 public class WorkerRunnable implements Runnable {
 
@@ -28,13 +30,24 @@ public class WorkerRunnable implements Runnable {
                 case COUNT:
                     break;
             }
-        } catch (IOException | ClassNotFoundException e) {
+
+        } catch (NotActiveException e) {
+           System.err.println("[ERROR] Operation Failed: " + e.getMessage());
+        } catch (NoSuchFileException e) {
+            System.err.println("[ERROR] Cannot fetch hosts from: " + e.getMessage());
+        } catch (IOException  e) {
             //report exception somewhere.
             e.printStackTrace();
+        } finally {
+            try {
+                clientSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
-    private Action getAction() throws IOException, ClassNotFoundException, IllegalArgumentException {
+    private Action getAction() throws IOException, IllegalArgumentException {
         InputStream socketIn = clientSocket.getInputStream();
         DataInputStream socketdis = new DataInputStream(socketIn);
         String action = socketdis.readUTF();
@@ -43,32 +56,42 @@ public class WorkerRunnable implements Runnable {
     }
 
     private void putFileAction() throws IOException {
-        String[] hosts = { "localhost" };
-        int[] ports = { 2001 };
+        int ports = 2001;
+
+        List<String> hosts = HostsHelper.fetchHosts();
 
         StorageConnections storageConnections = new StorageConnections(hosts, ports);
 
         storageConnections.sendAction("PUT");
         storageConnections.putFileAction(clientSocket);
 
-        clientSocket.close();
         storageConnections.closeAll();
+
+        sendSuccess();
 
         System.out.println(TAG + "File successfully Forwarded to Storage Server!");
     }
 
-    private void getFileAction() throws IOException, ClassNotFoundException {
-        String[] hosts = { "localhost" };
-        int[] ports = { 2001 };
+    private void getFileAction() throws IOException {
+        int ports = 2001;
+
+        List<String> hosts = HostsHelper.fetchHosts();
 
         StorageConnections storageConnections = new StorageConnections(hosts, ports);
 
         storageConnections.sendAction("GET");
         storageConnections.getFileAction(clientSocket);
 
-        clientSocket.close();
         storageConnections.closeAll();
 
         System.out.println(TAG + "File successfully Forwarded to Client!");
+    }
+
+    public void sendSuccess() throws IOException {
+        OutputStream outputStream = clientSocket.getOutputStream();
+        // create a data output stream from the output stream so we can send data through it
+        DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
+        dataOutputStream.writeUTF("SUCCESS");
+        dataOutputStream.flush(); // send the message
     }
 }

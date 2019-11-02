@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="JadoopMaster:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/JadoopMaster_jar</output-path>
+    <root id="archive" name="JadoopMaster.jar">
+      <element id="module-output" name="JadoopMaster" />
+    </root>
+  </artifact>
+</component>

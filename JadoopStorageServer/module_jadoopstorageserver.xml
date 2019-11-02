@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_jadoopstorageserver" default="compile.module.jadoopstorageserver">
+  <dirname property="module.jadoopstorageserver.basedir" file="${ant.file.module_jadoopstorageserver}"/>
+  
+  <property name="module.jdk.home.jadoopstorageserver" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.jadoopstorageserver" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.jadoopstorageserver" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.jadoopstorageserver" value="-encoding UTF-8 -source 11 -target 11 ${compiler.args}"/>
+  
+  <property name="jadoopstorageserver.output.dir" value="${module.jadoopstorageserver.basedir}/../out/production/JadoopStorageServer"/>
+  <property name="jadoopstorageserver.testoutput.dir" value="${module.jadoopstorageserver.basedir}/../out/test/JadoopStorageServer"/>
+  
+  <path id="jadoopstorageserver.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="jadoopstorageserver.module.production.classpath">
+    <path refid="${module.jdk.classpath.jadoopstorageserver}"/>
+  </path>
+  
+  <path id="jadoopstorageserver.runtime.production.module.classpath">
+    <pathelement location="${jadoopstorageserver.output.dir}"/>
+  </path>
+  
+  <path id="jadoopstorageserver.module.classpath">
+    <path refid="${module.jdk.classpath.jadoopstorageserver}"/>
+    <pathelement location="${jadoopstorageserver.output.dir}"/>
+  </path>
+  
+  <path id="jadoopstorageserver.runtime.module.classpath">
+    <pathelement location="${jadoopstorageserver.testoutput.dir}"/>
+    <pathelement location="${jadoopstorageserver.output.dir}"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.jadoopstorageserver">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.jadoopstorageserver">
+    <patternset refid="excluded.from.module.jadoopstorageserver"/>
+  </patternset>
+  
+  <path id="jadoopstorageserver.module.sourcepath">
+    <dirset dir="${module.jadoopstorageserver.basedir}">
+      <include name="src"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.jadoopstorageserver" depends="compile.module.jadoopstorageserver.production,compile.module.jadoopstorageserver.tests" description="Compile module JadoopStorageServer"/>
+  
+  <target name="compile.module.jadoopstorageserver.production" depends="register.custom.compilers" description="Compile module JadoopStorageServer; production classes">
+    <mkdir dir="${jadoopstorageserver.output.dir}"/>
+    <javac2 destdir="${jadoopstorageserver.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.jadoopstorageserver}/javac">
+      <compilerarg line="${compiler.args.jadoopstorageserver}"/>
+      <bootclasspath refid="jadoopstorageserver.module.bootclasspath"/>
+      <classpath refid="jadoopstorageserver.module.production.classpath"/>
+      <src refid="jadoopstorageserver.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.jadoopstorageserver"/>
+    </javac2>
+    
+    <copy todir="${jadoopstorageserver.output.dir}">
+      <fileset dir="${module.jadoopstorageserver.basedir}/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.jadoopstorageserver.tests" depends="register.custom.compilers,compile.module.jadoopstorageserver.production" description="compile module JadoopStorageServer; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.jadoopstorageserver" description="cleanup module">
+    <delete dir="${jadoopstorageserver.output.dir}"/>
+    <delete dir="${jadoopstorageserver.testoutput.dir}"/>
+  </target>
+</project>

@@ -5,7 +5,6 @@
       <module fileurl="file://$PROJECT_DIR$/Jadoop/Jadoop.iml" filepath="$PROJECT_DIR$/Jadoop/Jadoop.iml" />
       <module fileurl="file://$PROJECT_DIR$/JadoopMaster/JadoopMaster.iml" filepath="$PROJECT_DIR$/JadoopMaster/JadoopMaster.iml" />
       <module fileurl="file://$PROJECT_DIR$/JadoopStorageServer/JadoopStorageServer.iml" filepath="$PROJECT_DIR$/JadoopStorageServer/JadoopStorageServer.iml" />
-      <module fileurl="file://$PROJECT_DIR$/java.iml" filepath="$PROJECT_DIR$/java.iml" />
     </modules>
   </component>
 </project>

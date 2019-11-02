@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_jadoop" default="compile.module.jadoop">
+  <dirname property="module.jadoop.basedir" file="${ant.file.module_jadoop}"/>
+  
+  <property name="module.jdk.home.jadoop" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.jadoop" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.jadoop" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.jadoop" value="-encoding UTF-8 -source 11 -target 11 ${compiler.args}"/>
+  
+  <property name="jadoop.output.dir" value="${module.jadoop.basedir}/../out/production/Jadoop"/>
+  <property name="jadoop.testoutput.dir" value="${module.jadoop.basedir}/../out/test/Jadoop"/>
+  
+  <path id="jadoop.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="jadoop.module.production.classpath">
+    <path refid="${module.jdk.classpath.jadoop}"/>
+  </path>
+  
+  <path id="jadoop.runtime.production.module.classpath">
+    <pathelement location="${jadoop.output.dir}"/>
+  </path>
+  
+  <path id="jadoop.module.classpath">
+    <path refid="${module.jdk.classpath.jadoop}"/>
+    <pathelement location="${jadoop.output.dir}"/>
+  </path>
+  
+  <path id="jadoop.runtime.module.classpath">
+    <pathelement location="${jadoop.testoutput.dir}"/>
+    <pathelement location="${jadoop.output.dir}"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.jadoop">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.jadoop">
+    <patternset refid="excluded.from.module.jadoop"/>
+  </patternset>
+  
+  <path id="jadoop.module.sourcepath">
+    <dirset dir="${module.jadoop.basedir}">
+      <include name="src"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.jadoop" depends="compile.module.jadoop.production,compile.module.jadoop.tests" description="Compile module Jadoop"/>
+  
+  <target name="compile.module.jadoop.production" depends="register.custom.compilers" description="Compile module Jadoop; production classes">
+    <mkdir dir="${jadoop.output.dir}"/>
+    <javac2 destdir="${jadoop.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.jadoop}/javac">
+      <compilerarg line="${compiler.args.jadoop}"/>
+      <bootclasspath refid="jadoop.module.bootclasspath"/>
+      <classpath refid="jadoop.module.production.classpath"/>
+      <src refid="jadoop.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.jadoop"/>
+    </javac2>
+    
+    <copy todir="${jadoop.output.dir}">
+      <fileset dir="${module.jadoop.basedir}/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.jadoop.tests" depends="register.custom.compilers,compile.module.jadoop.production" description="compile module Jadoop; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.jadoop" description="cleanup module">
+    <delete dir="${jadoop.output.dir}"/>
+    <delete dir="${jadoop.testoutput.dir}"/>
+  </target>
+</project>

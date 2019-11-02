@@ -3,6 +3,7 @@ package com.abhishek.server;
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.List;
 
 public class StorageConnections {
     
@@ -10,19 +11,18 @@ public class StorageConnections {
 
     public ArrayList<Socket> sockets;
 
-    public StorageConnections(String[] host, int[] port) {
+    public StorageConnections(List<String> host, int port) throws NotActiveException {
         sockets = new ArrayList<>();
         System.out.println(TAG + "Connecting to Storage server node ...");
 
-        for(int i=0; i<host.length; i++) {
-            try {
-                sockets.add(new Socket(host[i], port[i]));
-            } catch (IOException e) {
-                System.out.println(TAG + "Cannot connect to node with host: " + host[i]);
-                e.printStackTrace();
+        try {
+            for(int i=0; i<host.size(); i++) {
+                sockets.add(new Socket(host.get(i), port));
             }
+            System.out.println(TAG + "Connected to available nodes!");
+        } catch (IOException e) {
+            throw  new NotActiveException("Failed to Connect to some Storage nodes!!");
         }
-        System.out.println(TAG + "Connected to available nodes!");
     }
 
     public void sendAction(String action) throws IOException {
@@ -42,18 +42,29 @@ public class StorageConnections {
         byte[] buffer = new byte[1024];
         int count;
 
+        // getting file size
+        DataInputStream socketdis = new DataInputStream(socketIn);
+        long fileSize = socketdis.readLong();
+
         System.out.println(TAG + "Forwarding File from Client to storage ...");
-        while ((count = socketIn.read(buffer)) > 0) {
+        while ((count = socketIn.read(buffer)) > 0 && fileSize > 0) {
             for(Socket socket: sockets) {
                 socket.getOutputStream().write(buffer, 0, count);
                 socket.getOutputStream().flush();
             }
+            fileSize -= count;
         }
 
         System.out.println(TAG + "Forwarding File from Client to storage complete");
     }
 
     public void getFileAction(Socket clientSocket) throws IOException {
+        // Getting first available storage
+        Socket socket = HostsHelper.getFirstAvailableStorage(sockets);
+
+        if(socket == null)
+            throw  new NotActiveException("No active Storage nodes");
+
         // getting file name
         InputStream clientIs = clientSocket.getInputStream();
         DataInputStream clientDis = new DataInputStream(clientIs);
@@ -78,6 +89,7 @@ public class StorageConnections {
             clientOs.write(buffer, 0, count);
             clientOs.flush();
         }
+
         System.out.println(TAG + "Forwarding file from Storage to client complete");
     }
 

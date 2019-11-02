@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_jadoopmaster" default="compile.module.jadoopmaster">
+  <dirname property="module.jadoopmaster.basedir" file="${ant.file.module_jadoopmaster}"/>
+  
+  <property name="module.jdk.home.jadoopmaster" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.jadoopmaster" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.jadoopmaster" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.jadoopmaster" value="-encoding UTF-8 -source 11 -target 11 ${compiler.args}"/>
+  
+  <property name="jadoopmaster.output.dir" value="${module.jadoopmaster.basedir}/../out/production/JadoopMaster"/>
+  <property name="jadoopmaster.testoutput.dir" value="${module.jadoopmaster.basedir}/../out/test/JadoopMaster"/>
+  
+  <path id="jadoopmaster.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="jadoopmaster.module.production.classpath">
+    <path refid="${module.jdk.classpath.jadoopmaster}"/>
+  </path>
+  
+  <path id="jadoopmaster.runtime.production.module.classpath">
+    <pathelement location="${jadoopmaster.output.dir}"/>
+  </path>
+  
+  <path id="jadoopmaster.module.classpath">
+    <path refid="${module.jdk.classpath.jadoopmaster}"/>
+    <pathelement location="${jadoopmaster.output.dir}"/>
+  </path>
+  
+  <path id="jadoopmaster.runtime.module.classpath">
+    <pathelement location="${jadoopmaster.testoutput.dir}"/>
+    <pathelement location="${jadoopmaster.output.dir}"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.jadoopmaster">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.jadoopmaster">
+    <patternset refid="excluded.from.module.jadoopmaster"/>
+  </patternset>
+  
+  <path id="jadoopmaster.module.sourcepath">
+    <dirset dir="${module.jadoopmaster.basedir}">
+      <include name="src"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.jadoopmaster" depends="compile.module.jadoopmaster.production,compile.module.jadoopmaster.tests" description="Compile module JadoopMaster"/>
+  
+  <target name="compile.module.jadoopmaster.production" depends="register.custom.compilers" description="Compile module JadoopMaster; production classes">
+    <mkdir dir="${jadoopmaster.output.dir}"/>
+    <javac2 destdir="${jadoopmaster.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.jadoopmaster}/javac">
+      <compilerarg line="${compiler.args.jadoopmaster}"/>
+      <bootclasspath refid="jadoopmaster.module.bootclasspath"/>
+      <classpath refid="jadoopmaster.module.production.classpath"/>
+      <src refid="jadoopmaster.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.jadoopmaster"/>
+    </javac2>
+    
+    <copy todir="${jadoopmaster.output.dir}">
+      <fileset dir="${module.jadoopmaster.basedir}/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.jadoopmaster.tests" depends="register.custom.compilers,compile.module.jadoopmaster.production" description="compile module JadoopMaster; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.jadoopmaster" description="cleanup module">
+    <delete dir="${jadoopmaster.output.dir}"/>
+    <delete dir="${jadoopmaster.testoutput.dir}"/>
+  </target>
+</project>
