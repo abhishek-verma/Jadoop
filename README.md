@@ -5,7 +5,7 @@ Barebones implementation of Distributed object storage using Java.
 # Test
 ```
 git clone https://github.com/abhishek-verma/Jadoop.git
-cd jadoop/out/artifacts/executable
+cd jadoop/executable
 
 # Start Master Server
 java -jar JadoopMaster.jar
